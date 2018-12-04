@@ -48,9 +48,13 @@ complete -W "NSGlobalDomain" defaults;
 complete -o "nospace" -W "Contacts Calendar Dock Finder Mail Safari iTunes SystemUIServer Terminal Twitter" killall;
 
 # Show pretty system info
-archey -c
+archey -c --offline
 
+# Load Powerline
 source ~/Library/Python/3.6/lib/python/site-packages/powerline/bindings/bash/powerline.sh
 
-export NVM_DIR="$HOME/.nvm"
+# Load NVM
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
+# Load thefuck
+eval $(thefuck --alias)

@@ -4,14 +4,16 @@ cd "$(dirname "${BASH_SOURCE}")";
 
 git pull origin master;
 
+BREW_PREFIX=$(brew --prefix)
+
 function doIt() {
     # Copy files to Home folder
     rsync --exclude ".git/" \
         --exclude ".DS_Store" \
-        --exclude ".osx" \
         --exclude "bootstrap.sh" \
+        --exclude "dev.sh" \
         --exclude "README.md" \
-        --exclude "LICENSE-MIT.txt" \
+        --exclude "LICENSE" \
         -avh --no-perms . ~;
 
     # Change current working directory to Home folder
@@ -25,7 +27,7 @@ function doIt() {
     fi;
 
     source ~/.bash_profile;
-    ./macos;
+    ./.macos;
 }
 
 if [ "$1" == "--force" -o "$1" == "-f" ]; then

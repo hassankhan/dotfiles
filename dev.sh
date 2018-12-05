@@ -3,6 +3,8 @@
 . ~/.bash_profile
 
 # nvm
+unset NVM_DIR
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 nvm install node
 nvm install --lts
 nvm alias default lts/*
@@ -20,6 +22,7 @@ yarn global add @endemolshinegroup/generator-serverless-nodejs-ts
 yarn global add create-react-native-app
 yarn global add create-react-app
 yarn global add serverless
+yarn global add ts-node
 
 # pip
 pip3 install --upgrade pip

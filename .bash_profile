@@ -51,10 +51,13 @@ complete -o "nospace" -W "Contacts Calendar Dock Finder Mail Safari iTunes Syste
 archey -c --offline
 
 # Load Powerline
-source ~/Library/Python/3.6/lib/python/site-packages/powerline/bindings/bash/powerline.sh
+source ~/Library/Python/3.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh
 
 # Load NVM
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
+# Load NVM bash_completion
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # Load thefuck
 eval $(thefuck --alias)

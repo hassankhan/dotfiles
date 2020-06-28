@@ -7,6 +7,18 @@ git pull origin master;
 BREW_PREFIX=$(brew --prefix)
 
 function doIt() {
+
+    installation_types=("personal" "work")
+    read -p 'Is this being installed on a personal or work machine: ' INSTALLATION_TYPE;
+
+    # If unrecognised installation type
+    if [[ ! " ${installation_types[@]} " =~ " ${INSTALLATION_TYPE} " ]]; then
+        echo "Installation type must be one of: personal, work";
+        exit 1;
+    fi
+
+    cp Brewfile-${INSTALLATION_TYPE} Brewfile;
+
     # Copy files to Home folder
     rsync --exclude ".git/" \
         --exclude ".DS_Store" \
@@ -14,6 +26,7 @@ function doIt() {
         --exclude "dev.sh" \
         --exclude "README.md" \
         --exclude "LICENSE" \
+        --exclude "Brewfile-*" \
         -avh --no-perms . ~;
 
     # Change current working directory to Home folder

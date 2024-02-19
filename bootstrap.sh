@@ -1,36 +1,38 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "${BASH_SOURCE}")";
+current_directory=$(pwd)
 
-git pull origin master;
+# Use TouchID for sudo
+sudo cp config/macos/sudo_local /etc/pam.d/sudo_local;
 
-function doIt() {
+# Install Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
 
-    # Copy files to Home folder
-    rsync --exclude ".git/" \
-        --exclude ".DS_Store" \
-        --exclude "bootstrap.sh" \
-        --exclude "dev.sh" \
-        --exclude "README.md" \
-        --exclude "LICENSE" \
-        --exclude ".macos" \
-        -avh --no-perms . ~;
+# Install Homebrew formulae and casks
+cp Brewfile ~
+cd ~
+brew bundle
+cd $current_directory
 
-    # Change current working directory to Home folder
-    cd ~;
-    # Install apps/utilities from Homebrew
-    brew bundle;
-    # Set macOS defaults
-    # ./.macos;
-}
+# Run Stow
+cd stow
+for FOLDER in */; do
+    # Extract folder name
+    FOLDER_NAME="${FOLDER%/}"
+    # Run stow for each folder
+    stow -t ~ "$FOLDER_NAME"
+done
+cd $current_directory
 
-if [ "$1" == "--force" -o "$1" == "-f" ]; then
-    doIt;
-else
-    read -p "This may overwrite existing files in your home directory. Are you sure? (y/n) " -n 1;
-    echo "";
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        doIt;
-    fi;
-fi;
-unset doIt;
+# Set macOS preferences
+./config/.macos
+
+# Set Bartender preferences
+cp init/com.surteesstudios.Bartender.plist ~/Library/Preferences
+
+# Create Tower environment.plist file so Git commit hooks work
+file=~/Library/Application\ Support/com.fournova.Tower3/environment.plist
+if [ ! -f "$file" ]; then
+    touch "$file"
+fi
+defaults write "$file" PATH "$PATH"

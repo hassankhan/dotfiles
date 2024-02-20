@@ -1,10 +1,14 @@
+# Update $PATH
+export PATH="/opt/homebrew/bin:$PATH"
+export PATH="$HOME/Library/Application\ Support/JetBrains/Toolbox/scripts:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
 # Make Fleet the default editor
 export EDITOR='fleet';
 
 # Prefer GB English and use UTF-8.
 export LANG='en_GB.UTF-8';
 export LC_ALL='en_GB.UTF-8';
-
 # Highlight section titles in manual pages.
 export LESS_TERMCAP_md="${yellow}";
 

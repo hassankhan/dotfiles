@@ -12,7 +12,6 @@ if status is-interactive
     test -e {$HOME}/.config/fish/conf.d/aliases.fish ; and source {$HOME}/.config/fish/conf.d/aliases.fish
     test -e {$HOME}/.config/fish/conf.d/paths.fish ; and source {$HOME}/.config/fish/conf.d/paths.fish
     test -e {$HOME}/.config/fish/conf.d/utils.fish ; and source {$HOME}/.config/fish/conf.d/utils.fish
-    # test -e {$HOME}/.config/fish/conf.d/nx.fish ; and source {$HOME}/.config/fish/conf.d/nx.fish
     
     # Shell customizations
     atuin init fish | source

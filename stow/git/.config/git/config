@@ -137,6 +137,9 @@
     # Detect copies as well as renames
     renames = copies
 
+    # See https://luppeng.wordpress.com/2020/10/10/when-to-use-each-of-the-git-diff-algorithms/
+    algorithm = histogram
+
 [diff "bin"]
 
     # Use `hexdump` to diff binary files
@@ -149,8 +152,24 @@
 
 [merge]
 
+    # Use zdiff3 algorithm for merge conflicts. See https://ductile.systems/zdiff3
+    conflictstyle = zdiff3
+
     # Include summaries of merged commits in newly created merge commit messages
     log = true
+
+[pull]
+
+    # Always rebase branch on pull
+    rebase = true
+
+[rebase]
+
+    # Automatically squash commits starting with `fixup! <PARENT_COMMIT_ID>`
+    autosquash = true
+
+    # Automatically stash before a rebase, and pop the stash after
+    autostash = true
 
 [push]
 
@@ -159,11 +178,17 @@
     # Make `git push` push relevant annotated tags when pushing branches out.
     followTags = true
 
+[rerere]
+    # This enables "reuse recovered resolution", which remembers how you resolved merge conflicts
+    # during a rebase and automatically resolves conflicts for you when it can
+    enabled = true
+
 # URL shorthands
 
 [url "git@github.com:"]
 
     insteadOf = "gh:"
+    insteadOf = "https://github.com/"
     pushInsteadOf = "github:"
     pushInsteadOf = "git://github.com/"
 
@@ -174,6 +199,7 @@
 [url "git@gist.github.com:"]
 
     insteadOf = "gst:"
+    insteadOf = "https://gist.github.com/"
     pushInsteadOf = "gist:"
     pushInsteadOf = "git://gist.github.com/"
 

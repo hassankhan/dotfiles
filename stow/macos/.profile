@@ -1,3 +1,10 @@
+# Set XDG paths
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_STATE_HOME="$HOME/.local/state"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_RUNTIME_DIR="$HOME/Library/Caches/TemporaryItems"
+
 # Update $PATH
 export PATH="/opt/homebrew/bin:$PATH"
 export PATH="$HOME/Library/Application\ Support/JetBrains/Toolbox/scripts:$PATH"
@@ -9,6 +16,7 @@ export EDITOR='fleet';
 # Prefer GB English and use UTF-8.
 export LANG='en_GB.UTF-8';
 export LC_ALL='en_GB.UTF-8';
+
 # Highlight section titles in manual pages.
 export LESS_TERMCAP_md="${yellow}";
 
@@ -19,13 +27,6 @@ export MANPAGER='less -X';
 # https://stackoverflow.com/a/42265848/96656
 export GPG_TTY=$(tty);
 
-# Set XDG paths
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_STATE_HOME="$HOME/.local/state"
-export XDG_CACHE_HOME="$HOME/.cache"
-export XDG_RUNTIME_DIR="$HOME/Library/Caches/TemporaryItems"
-
 # Set application paths
 export ANSIBLE_HOME="$XDG_DATA_HOME"/ansible
 export AZURE_CONFIG_DIR="$XDG_DATA_HOME"/azure
@@ -35,11 +36,12 @@ export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export WGETRC="$XDG_CONFIG_HOME/wgetrc"
 export ZDOTDIR="$HOME"/.config/zsh
 export HISTFILE="$XDG_STATE_HOME"/zsh/history
+export LESSHISTFILE="$XDG_STATE_HOME"/less/history
 
-# Mise
+## Mise
 export MISE_NODE_DEFAULT_PACKAGES_FILE="$XDG_CONFIG_HOME/mise/.default-npm-packages"
 
-# Android
+## Android
 export ANDROID_USER_HOME="$XDG_DATA_HOME"/android
 
 ## iOS/macOS
@@ -47,7 +49,6 @@ export CP_HOME_DIR="$XDG_DATA_HOME"/cocoapods
 
 ## Go
 export GOPATH="$XDG_DATA_HOME"/go
-export LESSHISTFILE="$XDG_STATE_HOME"/less/history
 
 ## Node/NPM
 export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME"/npm/npmrc

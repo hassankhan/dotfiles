@@ -13,5 +13,5 @@ if status is-interactive
     # Shell customizations
     atuin init fish | source
     starship init fish | source
-    zoxide init fish | source
+    zoxide init --cmd cd fish | source
 end

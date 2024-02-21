@@ -5,6 +5,7 @@ alias p="cd ~/Projects"
 
 alias cat="bat"
 alias ls="eza -lag --header"
+alias ping="gping"
 alias tree="br -s"
 
 alias flush_dns="dscacheutil -flushcache && sudo killall -HUP mDNSResponder"

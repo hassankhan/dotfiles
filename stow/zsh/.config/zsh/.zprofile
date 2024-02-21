@@ -7,9 +7,3 @@ for file in ~/.{path,aliases,functions,extra}; do
 	[ -r "$file" ] && [ -f "$file" ] && source "$file";
 done;
 unset file;
-
-# Load thefuck
-eval $(thefuck --alias)
-
-# Added by Toolbox App
-export PATH="$PATH:/Users/hassankhan/Library/Application Support/JetBrains/Toolbox/scripts"

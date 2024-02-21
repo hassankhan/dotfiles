@@ -128,3 +128,8 @@ eval "$(starship init zsh)"
 eval "$(mise activate zsh)"
 eval "$(mise hook-env -s zsh)"
 eval "$(zoxide init zsh)"
+
+for file in $XDG_CONFIG_HOME/zsh/conf.d/*.zsh; do
+	[ -r "$file" ] && [ -f "$file" ] && source "$file";
+done;
+unset file;

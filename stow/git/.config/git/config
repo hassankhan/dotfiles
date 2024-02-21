@@ -220,7 +220,7 @@
 
 	name = Hassan Khan
 	email = contact@hassankhan.me
-	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOrUoVoM1NEYWF6yDNidpB29tcnmK+FODX1ytf1PQGMG
+	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOrUoVoM1NEYWF6yDNidpB29tcnmK+FODX1ytf1PQGMG GitHub SSH [hassankhan]
 	
 [difftool "Kaleidoscope"]
 

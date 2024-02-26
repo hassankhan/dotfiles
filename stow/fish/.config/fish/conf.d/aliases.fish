@@ -15,6 +15,7 @@ alias flush_dns="dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
 alias adb='HOME="$XDG_DATA_HOME"/android adb'
 alias wget='wget --hsts-file="$XDG_DATA_HOME/wget-hsts"'
 alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
+alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
 alias cleanup_macos="fd -u .DS_Store -x rm"
 alias cleanup_node="fd -u node_modules --prune -x rm -rf"

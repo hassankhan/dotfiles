@@ -14,4 +14,7 @@ if status is-interactive
     atuin init fish | source
     starship init fish | source
     zoxide init --cmd cd fish | source
+
+    set -U fzf_preview_file_cmd preview
+
 end

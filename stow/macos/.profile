@@ -71,10 +71,11 @@ export BUNDLE_USER_PLUGIN="$XDG_DATA_HOME"/bundle
 export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 
-. "$CARGO_HOME/env"
 ## usql
 export USQL_HISTORY="$XDG_DATA_HOME"/usql/history
 export USQLRC="$XDG_CONFIG_HOME"/usql/config
+
+# Set application configuration
 
 ## 1Password
 ## This is so applications like Ansible can decrypt SSH private keys
@@ -86,6 +87,7 @@ export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agen
 export ITERM2_SQUELCH_MARK=1
 
 ## atuin
+## Prevent atuin from binding any keyboard shortcuts, because I use fzf
 export ATUIN_NOBIND=1
 
 ## fzf
@@ -93,3 +95,9 @@ export ATUIN_NOBIND=1
 ## I think the fish-fzf plugin might be overriding these though.
 export FZF_DEFAULT_COMMAND="fd -H -tf"
 export FZF_DEFAULT_OPTS="--cycle"
+
+## zoxide
+## Set default fzf options for zoxide
+export _ZO_FZF_OPTS="--cycle --height 10"
+
+. "$CARGO_HOME/env"

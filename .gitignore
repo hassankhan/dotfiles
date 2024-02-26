@@ -13,4 +13,9 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 
+# Fisher plugins
+_*.fish
+
+# zsh
+.zsh_history
 *.zcompdump-*

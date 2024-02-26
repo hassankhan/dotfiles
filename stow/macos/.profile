@@ -72,6 +72,10 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 
 . "$CARGO_HOME/env"
+## usql
+export USQL_HISTORY="$XDG_DATA_HOME"/usql/history
+export USQLRC="$XDG_CONFIG_HOME"/usql/config
+
 ## 1Password
 ## This is so applications like Ansible can decrypt SSH private keys
 export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock

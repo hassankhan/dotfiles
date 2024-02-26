@@ -77,4 +77,7 @@ export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 export ATUIN_NOBIND=1
 
 ## fzf
+## Set some defaults for fzf.
+## I think the fish-fzf plugin might be overriding these though.
 export FZF_DEFAULT_COMMAND="fd -H -tf"
+export FZF_DEFAULT_OPTS="--cycle"

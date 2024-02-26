@@ -4,7 +4,7 @@ alias dt="cd ~/Desktop"
 alias p="cd ~/Projects"
 
 alias cat="bat"
-alias ls="eza -lag --header --group-directories-first"
+alias ls="eza -lag --header --group-directories-first --binary"
 alias ping="gping"
 alias tree="broot -s"
 

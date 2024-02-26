@@ -10,7 +10,7 @@ $fill\
 [](fg:color_yellow bg:color_aqua)\
 $git_branch\
 [ ](fg:color_aqua)\
-$line_break$character"""
+$line_break${custom.iterm_prompt_marker}$character"""
 
 palette = 'gruvbox_dark'
 
@@ -161,3 +161,7 @@ vimcmd_symbol = '[](bold fg:color_green)'
 vimcmd_replace_one_symbol = '[](bold fg:color_purple)'
 vimcmd_replace_symbol = '[](bold fg:color_purple)'
 vimcmd_visual_symbol = '[](bold fg:color_yellow)'
+
+[custom.iterm_prompt_marker]
+when = '[ "$TERM_PROGRAM" = "iTerm.app" ]'
+format = "\u001b\\]133;A\u0007"

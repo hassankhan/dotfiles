@@ -72,6 +72,10 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 
 . "$CARGO_HOME/env"
+## iTerm
+## A workaround to enable proper integration with prompt marks when using
+## Starship. See the `format` property in `starship.toml` for usage.
+export ITERM2_SQUELCH_MARK=1
 
 ## atuin
 export ATUIN_NOBIND=1

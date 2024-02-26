@@ -16,6 +16,8 @@
 	<false/>
 	<key>ClosingHotkeySwitchesSpaces</key>
 	<true/>
+	<key>Command</key>
+	<string></string>
 	<key>CommandSelection</key>
 	<true/>
 	<key>Control</key>
@@ -838,15 +840,15 @@
 			<key>AWDS Pane Directory</key>
 			<string></string>
 			<key>AWDS Pane Option</key>
-			<string>No</string>
+			<string>Recycle</string>
 			<key>AWDS Tab Directory</key>
 			<string></string>
 			<key>AWDS Tab Option</key>
-			<string>No</string>
+			<string>Recycle</string>
 			<key>AWDS Window Directory</key>
-			<string></string>
+			<string>/Users/hassankhan/Projects</string>
 			<key>AWDS Window Option</key>
-			<string>No</string>
+			<string>Yes</string>
 			<key>Allow Title Reporting</key>
 			<true/>
 			<key>Ambiguous Double Width</key>
@@ -1062,7 +1064,7 @@
 			<key>Custom Command</key>
 			<string>No</string>
 			<key>Custom Directory</key>
-			<string>Recycle</string>
+			<string>Advanced</string>
 			<key>Default Bookmark</key>
 			<string>No</string>
 			<key>Disable Printing</key>
@@ -1724,7 +1726,7 @@
 			<key>Window Type</key>
 			<integer>2</integer>
 			<key>Working Directory</key>
-			<string>/Users/hassankhan</string>
+			<string>/Users/hassankhan/Projects</string>
 		</dict>
 	</array>
 	<key>OnlyWhenMoreTabs</key>

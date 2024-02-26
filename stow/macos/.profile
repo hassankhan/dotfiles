@@ -72,6 +72,10 @@ export CARGO_HOME="$XDG_DATA_HOME"/cargo
 export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 
 . "$CARGO_HOME/env"
+## 1Password
+## This is so applications like Ansible can decrypt SSH private keys
+export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
+
 ## iTerm
 ## A workaround to enable proper integration with prompt marks when using
 ## Starship. See the `format` property in `starship.toml` for usage.

@@ -15,15 +15,3 @@ git clone https://github.com/hassankhan/dotfiles.git && cd dotfiles
 ```
 
 After cloning, run `bootstrap.sh`
-
-## Notes
-
-### iTerm
-
-#### Shell integration with `fish`
-
-After installing via Homebrew, open iTerm and install the shell integration
-from the menu **iTerm2 > Install Shell Integration**.
-
-After installation completes, move the contents of `~/.iterm2` to
-`~/.local/bin` and remove `~/.iterm2_shell_integration.fish`.

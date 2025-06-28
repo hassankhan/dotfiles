@@ -9,10 +9,7 @@ sudo cp config/macos/sudo_local /etc/pam.d/sudo_local;
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
 
 # Install Homebrew formulae and casks
-cp Brewfile ~
-cd ~
 brew bundle
-cd $current_directory
 
 # Run Stow
 cd stow
@@ -25,10 +22,7 @@ done
 cd $current_directory
 
 # Set macOS preferences
-./config/.macos
-
-# Set Bartender preferences
-cp init/com.surteesstudios.Bartender.plist ~/Library/Preferences
+./config/macos/.macos
 
 # Create Tower environment.plist file so Git commit hooks work
 file=~/Library/Application\ Support/com.fournova.Tower3/environment.plist

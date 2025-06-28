@@ -12,9 +12,10 @@ alias tree="broot -s"
 alias flush_dns="dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
 
 # Create aliases so applications use XDG paths 
-alias adb='HOME="$XDG_DATA_HOME"/android adb'
+alias adb='HOME="$XDG_DATA_HOME"/android command adb'
 alias wget='wget --hsts-file="$XDG_DATA_HOME/wget-hsts"'
-alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
+# Need to find a way to make this work for Yarn 1 and 2+
+# alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
 alias cleanup_macos="fd -u .DS_Store -x rm"

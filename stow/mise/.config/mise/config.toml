@@ -1,4 +1,11 @@
 [tools]
-node = "20"
+bun = "1"
+node = "22"
 python = "3.11"
-usage = "latest"
+usage = "2"
+deno = "2"
+uv = "latest"
+fzf = "latest"
+k9s = "latest"
+helm = "3"
+pulumi = "3"

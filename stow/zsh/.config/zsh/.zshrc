@@ -120,7 +120,6 @@ setopt inc_append_history
 setopt share_history
 setopt nocorrectall; setopt correct
 
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 [ -f "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh ] && source "${XDG_CONFIG_HOME:-$HOME/.config}"/fzf/fzf.zsh
 
 eval "$(atuin init zsh)"

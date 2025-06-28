@@ -185,10 +185,16 @@
 
 # URL shorthands
 
+# Using HTTPS URLs for fetch/pull means no 1Password SSH prompts popping up unnecessarily
+[url "https://github.com/"]
+
+    insteadOf = git@github.com:
+
+# Using SSH URLs for push means 1Password SSH prompts are enforced
 [url "git@github.com:"]
 
-    insteadOf = "gh:"
-    insteadOf = "https://github.com/"
+    pushInsteadOf = "gh:"
+    pushInsteadOf = "https://github.com/"
     pushInsteadOf = "github:"
     pushInsteadOf = "git://github.com/"
 
@@ -233,3 +239,7 @@
 
 [include]
     path = ~/Projects/.gitconfig
+[http]
+	postBuffer = 5g
+[ssh]
+	postBuffer = 5g

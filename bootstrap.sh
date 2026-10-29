@@ -21,6 +21,9 @@ for FOLDER in */; do
 done
 cd $current_directory
 
+# Install Fisher plugins
+fish -c 'fisher update'
+
 # Set macOS preferences
 ./config/macos/.macos
 

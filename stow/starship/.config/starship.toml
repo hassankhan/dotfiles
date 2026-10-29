@@ -18,6 +18,7 @@ palette = 'gruvbox_dark'
 color_fg0 = '#fbf1c7'
 color_bg1 = '#3c3836'
 color_bg3 = '#665c54'
+color_black = '#424242'
 color_blue = '#458588'
 color_aqua = '#689d6a'
 color_green = '#98971a'
@@ -57,12 +58,12 @@ RedHatEnterprise = "󱄛"
 
 [username]
 show_always = true
-style_user = "bg:color_orange fg:color_fg0"
-style_root = "bg:color_orange fg:color_fg0"
+style_user = "bg:color_orange bold fg:color_fg0"
+style_root = "bg:color_orange bold fg:color_fg0"
 format = '[ $user ]($style)'
 
 [directory]
-style = "fg:color_fg0 bg:color_yellow"
+style = "bold fg:color_black bg:color_yellow"
 format = "[ $path ]($style)"
 truncate_to_repo = true
 truncation_length = 8
@@ -78,12 +79,12 @@ truncation_symbol = "…/"
 [git_branch]
 symbol = ""
 style = "bg:color_aqua"
-format = '[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)'
+format = '[[ $symbol $branch ](bold fg:color_fg0 bg:color_aqua)]($style)'
 
 [git_status]
 disabled = true
 style = "bg:color_aqua"
-format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_aqua)]($style)'
+format = '[[($all_status$ahead_behind )](bold fg:color_fg0 bg:color_aqua)]($style)'
 
 [nodejs]
 disabled = true
@@ -162,7 +163,3 @@ vimcmd_symbol = '[](bold fg:color_green)'
 vimcmd_replace_one_symbol = '[](bold fg:color_purple)'
 vimcmd_replace_symbol = '[](bold fg:color_purple)'
 vimcmd_visual_symbol = '[](bold fg:color_yellow)'
-
-[custom.iterm_prompt_marker]
-when = '[ "$TERM_PROGRAM" = "iTerm.app" ]'
-format = "\u001b\\]133;A\u0007"

@@ -102,6 +102,9 @@
     # Set default editor to Sublime
     editor = subl -n -w
 
+    # Use git-delta as pager
+    pager = delta
+
 [color]
 
     # Use colors in Git commands that are capable of colored output when
@@ -132,6 +135,10 @@
     # https://help.github.com/articles/signing-commits-using-gpg/
 	gpgsign = true
 
+[delta]
+    navigate = true  # use n and N to move between diff sections
+    dark = true      # or `light = true`, or omit for auto-detection
+
 [diff]
 
     # Detect copies as well as renames
@@ -149,6 +156,10 @@
 
     # Automatically correct and execute mistyped commands
     autocorrect = 1
+
+[interactive]
+    # Use git-delta for interactive diffs (e.g. `git add -p`)
+    diffFilter = delta --color-only
 
 [merge]
 
@@ -215,8 +226,8 @@
     
 [gpg]
 
-	format = ssh
 	program = /opt/homebrew/bin/gpg
+	format = ssh
   
 [gpg "ssh"]
 
@@ -243,3 +254,13 @@
 	postBuffer = 5g
 [ssh]
 	postBuffer = 5g
+[url "ssh://git@github.com/expo/homebrew-expo-utils"]
+	insteadOf = https://github.com/expo/homebrew-expo-utils
+[init]
+	defaultBranch = main
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential

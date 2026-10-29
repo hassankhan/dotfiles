@@ -11,9 +11,13 @@ if status is-interactive
 
     # Shell customizations
     atuin init fish | source
+    direnv hook fish | source
     starship init fish | source
     zoxide init --cmd cd fish | source
 
     set -U fzf_preview_file_cmd preview
+
+    # Use Ctrl-F (instead of Ctrl-Alt-F) to search directories
+    fzf_configure_bindings --directory=ctrl-f
 
 end

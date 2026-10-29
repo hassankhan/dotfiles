@@ -1,6 +1,5 @@
 [tools]
 bun = "1"
-node = "22"
 python = "3.11"
 usage = "2"
 deno = "2"
@@ -9,3 +8,11 @@ fzf = "latest"
 k9s = "latest"
 helm = "3"
 pulumi = "3"
+direnv = "latest"
+gcloud = "latest"
+maestro = "latest"
+node = "22.21.1"
+rust = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["node"]

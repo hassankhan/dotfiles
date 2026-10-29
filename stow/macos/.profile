@@ -5,8 +5,8 @@ export XDG_STATE_HOME="$HOME/.local/state"
 export XDG_CACHE_HOME="$HOME/.cache"
 export XDG_RUNTIME_DIR="$HOME/Library/Caches/TemporaryItems"
 
-# Make Fleet the default editor
-export EDITOR='fleet';
+# Make Sublime Text the default editor
+export EDITOR='subl';
 
 # Prefer GB English and use UTF-8.
 export LANG='en_GB.UTF-8';
@@ -45,6 +45,7 @@ export MISE_NODE_DEFAULT_PACKAGES_FILE="$XDG_CONFIG_HOME/mise/.default-npm-packa
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home"
 export ANDROID_USER_HOME="$XDG_DATA_HOME/android"
 export ANDROID_HOME="$HOME/Library/Android/sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
 
 ## iOS/macOS
 export CP_HOME_DIR="$XDG_DATA_HOME"/cocoapods
@@ -110,7 +111,6 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.local/share/cargo/bin:$PATH"
 export PATH="$ANDROID_HOME/emulator:$PATH"
 export PATH="$ANDROID_HOME/platform-tools:$PATH"
+export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
-. "$CARGO_HOME/env"
-. "/Users/hassankhan/.local/share/cargo/env"
-
+export HOMEBREW_PREFIX="/opt/homebrew"

@@ -16,6 +16,14 @@ Thumbs.db
 # Fisher plugins
 _*.fish
 
+# SSH
+stow/ssh/.ssh
+!stow/ssh/.ssh/config
+
 # zsh
 .zsh_history
+.zsh_sessions/
 *.zcompdump-*
+
+# JetBrains
+.idea/

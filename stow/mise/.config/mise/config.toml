@@ -13,6 +13,7 @@ gcloud = "latest"
 maestro = "latest"
 node = "22.21.1"
 rust = "latest"
+hunk = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]

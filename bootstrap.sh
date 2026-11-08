@@ -17,9 +17,18 @@ for FOLDER in */; do
     # Extract folder name
     FOLDER_NAME="${FOLDER%/}"
     # Run stow for each folder
-    stow -t ~ "$FOLDER_NAME"
+    if [ "$FOLDER_NAME" = "claude" ]; then
+        # ~/.claude also holds host state and other installers' files, so link files, never the folder
+        stow --no-folding -t ~ "$FOLDER_NAME"
+    else
+        stow -t ~ "$FOLDER_NAME"
+    fi
 done
 cd $current_directory
+
+# Merge owned Codex, Claude Code and Cursor settings into the live files
+mise install uv
+mise exec uv -- ./agents/sync apply
 
 # Install Fisher plugins
 fish -c 'fisher update'

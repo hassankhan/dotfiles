@@ -1,0 +1,456 @@
+#!/usr/bin/env -S uv run --quiet --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["tomlkit>=0.13"]
+# ///
+"""Merge the agent settings that this repository owns into the live Codex, Claude Code and Cursor files.
+
+Every key in a fragment is an owned leaf. Live keys outside that set belong to the host or to another
+installer and are never written. See README.md in this directory.
+"""
+
+from __future__ import annotations
+
+import argparse
+import difflib
+import json
+import os
+import re
+import shutil
+import sys
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Callable, Literal
+
+import tomlkit
+import tomlkit.items
+
+AGENTS_DIR = Path(__file__).resolve().parent
+SHARED_DIR = AGENTS_DIR / "shared"
+SECRET_KEY_PATTERN = re.compile(r"token|secret|password|passwd|api[_-]?key|authinfo|credential", re.IGNORECASE)
+
+LeafPath = tuple[str, ...]
+FileFormat = Literal["json", "toml"]
+
+
+@dataclass(frozen=True)
+class OwnedLeaf:
+    value: Any
+    source: Path
+    # Set when `capture` can write the live value back to `source` at this key path.
+    capturable_path: LeafPath | None
+
+
+@dataclass(frozen=True)
+class Target:
+    name: str
+    relative_path: str
+    file_format: FileFormat
+    file_mode: int
+    create_if_missing: bool
+    build_owned_leaves: Callable[[], dict[LeafPath, OwnedLeaf]]
+
+
+@dataclass(frozen=True)
+class Change:
+    kind: Literal["set", "remove"]
+    path: LeafPath
+    old: Any
+    new: Any
+
+
+@dataclass
+class TargetPlan:
+    target: Target
+    live_path: Path
+    old_text: str | None
+    new_text: str | None
+    changes: list[Change]
+    owned_paths: list[LeafPath]
+    skipped_reason: str | None = None
+
+
+class SyncError(Exception):
+    pass
+
+
+# Fragment loading
+
+
+def unwrap(value: Any) -> Any:
+    return value.unwrap() if isinstance(value, tomlkit.items.Item | tomlkit.TOMLDocument) else value
+
+
+def read_fragment(path: Path) -> dict[str, Any]:
+    text = path.read_text()
+    data = json.loads(text) if path.suffix == ".json" else tomlkit.parse(text).unwrap()
+    secret_paths = [leaf for leaf in flatten(data) if is_secret_like(leaf)]
+    if secret_paths:
+        raise SyncError(f"{path} has secret-like keys {secret_paths}; keep secrets out of this repository")
+    return data
+
+
+def flatten(data: Any, prefix: LeafPath = ()) -> dict[LeafPath, Any]:
+    if isinstance(data, dict) and data:
+        leaves: dict[LeafPath, Any] = {}
+        for key, value in data.items():
+            leaves.update(flatten(value, prefix + (key,)))
+        return leaves
+    return {prefix: data}
+
+
+def is_secret_like(path: LeafPath) -> bool:
+    return any(SECRET_KEY_PATTERN.search(key) for key in path)
+
+
+def leaves_from_fragment(path: Path, base: LeafPath = ()) -> dict[LeafPath, OwnedLeaf]:
+    return {
+        base + leaf: OwnedLeaf(value, source=path, capturable_path=leaf)
+        for leaf, value in flatten(read_fragment(path)).items()
+    }
+
+
+def shared_leaves(source: Path, values: dict[LeafPath, Any]) -> dict[LeafPath, OwnedLeaf]:
+    return {path: OwnedLeaf(value, source=source, capturable_path=None) for path, value in values.items()}
+
+
+# Shared intent, rendered per host
+
+
+def response_style_text() -> str:
+    return (SHARED_DIR / "response-style.md").read_text()
+
+
+def mcp_server_leaves(base: LeafPath, render_url_server: Callable[[str], dict[str, Any]]) -> dict[LeafPath, OwnedLeaf]:
+    source = SHARED_DIR / "mcp-servers.json"
+    servers = read_fragment(source)
+    rendered = {
+        name: render_url_server(server["url"]) if "url" in server else server for name, server in servers.items()
+    }
+    return shared_leaves(source, flatten(rendered, base))
+
+
+def attribute_work_to_agent() -> bool:
+    return bool(read_fragment(SHARED_DIR / "attribution.json")["attributeWorkToAgent"])
+
+
+# Hosts
+
+
+def codex_config_leaves() -> dict[LeafPath, OwnedLeaf]:
+    leaves = mcp_server_leaves(("mcp_servers",), lambda url: {"url": url})
+    leaves.update(
+        shared_leaves(SHARED_DIR / "response-style.md", {("developer_instructions",): response_style_text()})
+    )
+    leaves.update(leaves_from_fragment(AGENTS_DIR / "codex" / "config.toml"))
+    return leaves
+
+
+def claude_settings_leaves() -> dict[LeafPath, OwnedLeaf]:
+    attribute = attribute_work_to_agent()
+    leaves = shared_leaves(
+        SHARED_DIR / "attribution.json",
+        {("includeCoAuthoredBy",): attribute, ("gitAttribution",): attribute},
+    )
+    leaves.update(leaves_from_fragment(AGENTS_DIR / "claude" / "settings.json"))
+    return leaves
+
+
+def cursor_mcp_leaves() -> dict[LeafPath, OwnedLeaf]:
+    leaves = mcp_server_leaves(("mcpServers",), lambda url: {"type": "http", "url": url})
+    leaves.update(leaves_from_fragment(AGENTS_DIR / "cursor" / "mcp.json"))
+    return leaves
+
+
+def cursor_cli_config_leaves() -> dict[LeafPath, OwnedLeaf]:
+    attribute = attribute_work_to_agent()
+    return shared_leaves(
+        SHARED_DIR / "attribution.json",
+        {
+            ("attribution", "attributeCommitsToAgent"): attribute,
+            ("attribution", "attributePRsToAgent"): attribute,
+        },
+    )
+
+
+TARGETS = [
+    Target("codex-config", ".codex/config.toml", "toml", 0o600, True, codex_config_leaves),
+    Target("claude-settings", ".claude/settings.json", "json", 0o600, True, claude_settings_leaves),
+    Target("cursor-mcp", ".cursor/mcp.json", "json", 0o644, True, cursor_mcp_leaves),
+    # cursor-agent writes required fields such as `permissions` on first run; do not invent them.
+    Target("cursor-cli-config", ".cursor/cli-config.json", "json", 0o644, False, cursor_cli_config_leaves),
+]
+
+
+# Live documents
+
+
+def parse_document(text: str | None, file_format: FileFormat) -> Any:
+    if file_format == "toml":
+        return tomlkit.parse(text or "")
+    return json.loads(text) if text else {}
+
+
+def serialize_document(document: Any, file_format: FileFormat) -> str:
+    if file_format == "toml":
+        return tomlkit.dumps(document)
+    return json.dumps(document, indent=2, ensure_ascii=False) + "\n"
+
+
+def get_leaf(document: Any, path: LeafPath) -> tuple[bool, Any]:
+    node = document
+    for key in path:
+        if not isinstance(node, dict) or key not in node:
+            return False, None
+        node = node[key]
+    return True, unwrap(node)
+
+
+def new_table(file_format: FileFormat) -> Any:
+    return tomlkit.table() if file_format == "toml" else {}
+
+
+def to_item(value: Any, file_format: FileFormat) -> Any:
+    if file_format == "toml" and isinstance(value, str) and "\n" in value:
+        return tomlkit.string(value, multiline=True)
+    return value
+
+
+def set_leaf(document: Any, path: LeafPath, value: Any, file_format: FileFormat) -> None:
+    node = document
+    for key in path[:-1]:
+        if key not in node:
+            node[key] = new_table(file_format)
+        elif not isinstance(node[key], dict):
+            raise SyncError(f"cannot set {'.'.join(path)}: {key} is not a table")
+        node = node[key]
+    node[path[-1]] = to_item(value, file_format)
+
+
+def remove_leaf(document: Any, path: LeafPath) -> None:
+    parents = [document]
+    for key in path[:-1]:
+        parents.append(parents[-1][key])
+    del parents[-1][path[-1]]
+    for depth in range(len(path) - 1, 0, -1):
+        if parents[depth]:
+            break
+        del parents[depth - 1][path[depth - 1]]
+
+
+# State
+
+
+def state_dir(home: Path) -> Path:
+    if home == Path.home() and os.environ.get("XDG_STATE_HOME"):
+        return Path(os.environ["XDG_STATE_HOME"]) / "dotfiles" / "agents"
+    return home / ".local" / "state" / "dotfiles" / "agents"
+
+
+def read_applied_record(home: Path) -> dict[str, Any]:
+    record_path = state_dir(home) / "applied.json"
+    return json.loads(record_path.read_text()) if record_path.exists() else {}
+
+
+def write_applied_record(home: Path, record: dict[str, Any]) -> None:
+    record_path = state_dir(home) / "applied.json"
+    record_path.parent.mkdir(parents=True, exist_ok=True)
+    record_path.write_text(json.dumps(record, indent=2) + "\n")
+
+
+# Planning and writing
+
+
+def plan_target(target: Target, home: Path, applied_record: dict[str, Any]) -> TargetPlan:
+    live_path = home / target.relative_path
+    owned = target.build_owned_leaves()
+    owned_paths = sorted(owned)
+
+    if live_path.is_symlink():
+        raise SyncError(f"{live_path} is a symlink; this tool and the skills installers only write regular files")
+    if not live_path.exists() and not target.create_if_missing:
+        return TargetPlan(target, live_path, None, None, [], owned_paths, skipped_reason="live file is missing")
+
+    old_text = live_path.read_text() if live_path.exists() else None
+    document = parse_document(old_text, target.file_format)
+    changes: list[Change] = []
+
+    for path in owned_paths:
+        found, current = get_leaf(document, path)
+        if not found or current != owned[path].value:
+            set_leaf(document, path, owned[path].value, target.file_format)
+            changes.append(Change("set", path, current if found else None, owned[path].value))
+
+    previously_owned = {tuple(path) for path in applied_record.get(target.name, {}).get("paths", [])}
+    for path in sorted(previously_owned - set(owned_paths)):
+        found, current = get_leaf(document, path)
+        if found:
+            remove_leaf(document, path)
+            changes.append(Change("remove", path, current, None))
+
+    new_text = serialize_document(document, target.file_format) if changes else old_text
+    return TargetPlan(target, live_path, old_text, new_text, changes, owned_paths)
+
+
+def write_target(plan: TargetPlan, home: Path) -> None:
+    current_text = plan.live_path.read_text() if plan.live_path.exists() else None
+    if current_text != plan.old_text:
+        raise SyncError(f"{plan.live_path} changed while planning; run the command again")
+
+    if plan.old_text is not None:
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S.%fZ")
+        backup_path = state_dir(home) / "backups" / f"{plan.target.name}-{timestamp}{plan.live_path.suffix}"
+        backup_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(plan.live_path, backup_path)
+        print(f"  backup: {backup_path}")
+
+    plan.live_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = plan.live_path.with_name(f".{plan.live_path.name}.{os.getpid()}.tmp")
+    file_mode = plan.live_path.stat().st_mode & 0o777 if plan.live_path.exists() else plan.target.file_mode
+    descriptor = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, file_mode)
+    with os.fdopen(descriptor, "w") as temp_file:
+        temp_file.write(plan.new_text)
+    os.replace(temp_path, plan.live_path)
+
+
+# Commands
+
+
+def format_path(path: LeafPath) -> str:
+    return ".".join(path)
+
+
+def print_changes(plan: TargetPlan) -> None:
+    for change in plan.changes:
+        if change.kind == "set":
+            print(f"  set    {format_path(change.path)}: {change.old!r} -> {change.new!r}")
+        else:
+            print(f"  remove {format_path(change.path)}: {change.old!r}")
+
+
+def plan_all(home: Path, only: list[str] | None) -> list[TargetPlan]:
+    applied_record = read_applied_record(home)
+    return [plan_target(target, home, applied_record) for target in TARGETS if not only or target.name in only]
+
+
+def command_diff(home: Path, only: list[str] | None) -> int:
+    for plan in plan_all(home, only):
+        print(f"{plan.target.name} ({plan.live_path})")
+        if plan.skipped_reason:
+            print(f"  skipped: {plan.skipped_reason}")
+        elif not plan.changes:
+            print("  in sync")
+        else:
+            print_changes(plan)
+            sys.stdout.writelines(
+                difflib.unified_diff(
+                    (plan.old_text or "").splitlines(keepends=True),
+                    plan.new_text.splitlines(keepends=True),
+                    fromfile=f"live/{plan.target.relative_path}",
+                    tofile=f"synced/{plan.target.relative_path}",
+                )
+            )
+    return 0
+
+
+def command_apply(home: Path, only: list[str] | None) -> int:
+    plans = plan_all(home, only)
+    applied_record = read_applied_record(home)
+    failures = 0
+    for plan in plans:
+        print(f"{plan.target.name} ({plan.live_path})")
+        if plan.skipped_reason:
+            print(f"  skipped: {plan.skipped_reason}")
+            continue
+        try:
+            if plan.changes:
+                print_changes(plan)
+                write_target(plan, home)
+                print("  written")
+            else:
+                print("  in sync")
+        except SyncError as error:
+            failures += 1
+            print(f"  failed: {error}", file=sys.stderr)
+            continue
+        applied_record[plan.target.name] = {
+            "paths": [list(path) for path in plan.owned_paths],
+            "applied_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        write_applied_record(home, applied_record)
+    return 1 if failures else 0
+
+
+def command_status(home: Path, only: list[str] | None) -> int:
+    applied_record = read_applied_record(home)
+    for plan in plan_all(home, only):
+        applied_at = applied_record.get(plan.target.name, {}).get("applied_at", "never")
+        state = plan.skipped_reason or ("in sync" if not plan.changes else f"{len(plan.changes)} owned keys differ")
+        print(f"{plan.target.name}: {state}; {len(plan.owned_paths)} owned keys; last applied {applied_at}")
+    return 0
+
+
+def write_fragment_leaf(fragment_path: Path, path: LeafPath, value: Any) -> None:
+    if fragment_path.suffix == ".json":
+        data = json.loads(fragment_path.read_text())
+        set_leaf(data, path, value, "json")
+        fragment_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+    else:
+        document = tomlkit.parse(fragment_path.read_text())
+        set_leaf(document, path, value, "toml")
+        fragment_path.write_text(tomlkit.dumps(document))
+
+
+def command_capture(home: Path, only: list[str] | None) -> int:
+    """Copy live values of owned keys back into host fragments. Shared values are reported for manual edits."""
+    for target in TARGETS:
+        if only and target.name not in only:
+            continue
+        live_path = home / target.relative_path
+        if not live_path.exists():
+            continue
+        document = parse_document(live_path.read_text(), target.file_format)
+        for path, leaf in sorted(target.build_owned_leaves().items()):
+            found, live_value = get_leaf(document, path)
+            if found and live_value == leaf.value:
+                continue
+            label = f"{target.name}: {format_path(path)}"
+            if not found:
+                print(f"{label} is missing from the live file; remove it from {leaf.source} if that is intended")
+            elif is_secret_like(path):
+                print(f"{label} looks like a secret; not captured")
+            elif leaf.capturable_path is None:
+                print(f"{label} comes from shared {leaf.source}; edit it by hand (live value {live_value!r})")
+            else:
+                write_fragment_leaf(leaf.source, leaf.capturable_path, live_value)
+                print(f"{label} captured into {leaf.source}")
+    return 0
+
+
+COMMANDS = {
+    "diff": command_diff,
+    "apply": command_apply,
+    "status": command_status,
+    "capture": command_capture,
+}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("command", choices=COMMANDS)
+    parser.add_argument("--dry-run", action="store_true", help="with apply: show the changes and write nothing")
+    parser.add_argument("--home", type=Path, default=Path.home(), help="alternate home directory for testing")
+    parser.add_argument("--only", action="append", choices=[target.name for target in TARGETS], help="limit to a target")
+    args = parser.parse_args()
+
+    command = "diff" if args.command == "apply" and args.dry_run else args.command
+    try:
+        return COMMANDS[command](args.home.expanduser().resolve(), args.only)
+    except SyncError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

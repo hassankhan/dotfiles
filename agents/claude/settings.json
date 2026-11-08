@@ -1,0 +1,28 @@
+{
+  "env": {
+    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
+  },
+  "model": "claude-fable-5-1[1m]",
+  "effortLevel": "high",
+  "alwaysThinkingEnabled": true,
+  "autoUpdatesChannel": "stable",
+  "tui": "fullscreen",
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/hassankhan/.claude/starship-statusline.sh"
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "expo@expo-plugins": true,
+    "codex@openai-codex": true,
+    "figma@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  }
+}

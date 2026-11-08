@@ -1,0 +1,21 @@
+personality = "pragmatic"
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+
+[mcp_servers.playwright]
+required = true
+startup_timeout_sec = 30.0
+
+[model_providers.callstack_ai]
+name = "callstack.ai"
+base_url = "https://api.callstack.ai/v1"
+env_key = "CALLSTACK_AUTH_TOKEN"
+wire_api = "responses"
+requires_openai_auth = false
+
+[marketplaces.slack]
+source_type = "git"
+source = "https://github.com/slackapi/slack-skills-plugin.git"
+
+[plugins."slack@slack"]
+enabled = true
